@@ -1,8 +1,11 @@
 
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: monospace;
   background-color: #000;
+	margin: 0;
+  color: #fff;
+  font-size: 24px;
 }
 
 h1 {
@@ -13,6 +16,70 @@ h1 {
   text-align: center;
 }
 .map {
-	width: 100%;
-	height: 450px;
+	width: 100vw;
+	height: 100vh;
+  z-index: 0;
+}
+.controls {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  padding: 24px;
+  z-index: 1;
+  text-align: center;
+  color: #FF3B30;
+}
+button {
+  background-color: #FF3B30;
+  color: #fff;
+  text-align: center;
+  font-size: 24px;
+  padding: 16px;
+  border: 0;
+  border-radius: 8px;
+  width: 220px;
+  font-family: monospace;
+}
+.spots {
+  fill: #3E93FF; /*blue*/
+}
+.spotsYou {
+  stroke: #FF3B30; /*red*/  
+  -webkit-animation: pulsate 2s ease-out;
+  -webkit-animation-iteration-count: infinite;
+  -moz-animation: pulsate 2s ease-out;
+  -moz-animation-iteration-count: infinite;
+  -ms-animation: pulsate 2s ease-out;
+  -ms-animation-iteration-count: infinite;
+  animation: pulsate 2s ease-out;
+  animation-iteration-count: infinite;
+}
+.tooltipYou {
+  font-weight: bold;
+  color: #FF3B30;
+}
+
+@-webkit-keyframes pulsate {
+  0%    { opacity:0.4; stroke-width: 1; }
+  50%   { opacity:1.0; stroke-width: 5; }
+  100%  { opacity:0.4; stroke-width: 1; }
+}
+
+@-moz-keyframes pulsate {
+  0%    { opacity:0.4; stroke-width: 1; }
+  50%   { opacity:1.0; stroke-width: 5; }
+  100%  { opacity:0.4; stroke-width: 1; }
+}
+
+@-ms-keyframes pulsate {
+  0%    { opacity:0.4; stroke-width: 1; }
+  50%   { opacity:1.0; stroke-width: 5; }
+  100%  { opacity:0.4; stroke-width: 1; }
+}
+
+@keyframes pulsate {
+  0%    { opacity:0.4; stroke-width: 1; }
+  50%   { opacity:1.0; stroke-width: 5; }
+  100%  { opacity:0.4; stroke-width: 1; }
 }

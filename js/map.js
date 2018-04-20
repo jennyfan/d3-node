@@ -1,3 +1,46 @@
+var TheMap, lat, lon;
+var controls = document.getElementById("controls");
+
+
+/** Seed a few points in Boston ***/
+var callData = [
+  {"name": "Harvard",
+   "coords": [42.373883,71.117131]
+  },
+  {"name": "HKS",
+    "coords": [42.371155, -71.121342]
+  },
+  {"name": "JFK Childhood Home",
+    "coords": [42.346945, -71.123242]
+  },
+  {"name": "Rose Fitzgerald Kennedy Greenway",
+    "coords": [42.362222, -71.050386]
+  },
+  {"name": "Rose Kennedy Home",
+    "coords": [42.364244, -71.053234]
+  },
+  {"name": "St Stephen's Church",
+    "coords": [42.365386, -71.052998]
+  },
+  {"name": "Union Oyster House",
+    "coords": [42.361089, -71.05691]
+  },
+  {"name": "Boston Public Library",
+    "coords": [42.361668, -71.064231]
+  },
+  {"name": "State House",
+    "coords": [42.359591, -71.062172]
+  },
+  {"name": "Hotel Bellevue",
+    "coords": [42.358248, -71.062421]
+  },
+  {"name": "Parker House Hotel",
+    "coords": [42.357711, -71.059914]
+  },
+  {"name": "Locke-Ober",
+    "coords": [42.355401, -71.061458]
+  }
+];
 
 /*
  *  map - Object constructor function
@@ -23,30 +66,15 @@ CallMap.prototype.initVis = function() {
 	var vis = this;
 
 	// Initialize leaflet map centered on coords
-	vis.callMap = L.map('call-map').setView([vis.mapPosition[0], vis.mapPosition[1]], 13);
+	vis.callMap = L.map('call-map').setView([vis.mapPosition[0], vis.mapPosition[1]], 14);
 
 	L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png', {
-			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+			attribution: 'NODE &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> / <a href="http://cartodb.com/attributions">CartoDB</a>',
 			subdomains: 'abcd',
 			maxZoom: 15,
-			minZoom: 13
+			minZoom: 14
 			})
 	 .addTo(vis.callMap);
-
-
-	// If the images are in the directory "/img":
-    L.Icon.Default.imagePath = 'img/';
-
-	// Defining an icon class with general options
-	vis.LeafIcon = L.Icon.extend({
-	     options: {
-	         shadowUrl: 'img/marker-shadow.png',
-	         iconSize: [15, 25],
-	         iconAnchor: [7, 25],
-	         popupAnchor: [0, -28]
-	} });
-
-	vis.location = new vis.LeafIcon({ iconUrl:  'img/marker-yellow.png' });
 
 	vis.wrangleData();
 }
@@ -61,10 +89,10 @@ CallMap.prototype.wrangleData = function() {
 
 	// Currently no data wrangling/filtering needed
 	vis.displayData = vis.data;
+    // console.log(vis.displayData);
 
 	// Update the visualization
 	vis.updateVis();
-
 }
 
 
@@ -76,17 +104,85 @@ CallMap.prototype.updateVis = function() {
 	var vis = this;
 
 	// Add empty layer groups for the markers / map objects
-	vis.calls = L.layerGroup().addTo(vis.callMap);
+	vis.locations = L.layerGroup().addTo(vis.callMap);
 
-	// vis.displayData.forEach(function(d) {
-	// 	// Create a marker and bind a popup with a particular HTML content
-	// 	var location = L.marker([d.geometry[1],d.geometry[0]], { 
-	// 		icon: vis.location
-	// 	  })
-	// 	  .bindPopup(d.createdAt + "<br>Code: " + d.code + " / Type: " + d.type);
+	vis.displayData.forEach(function(d) {
+		// Create a marker and bind a popup with a particular HTML content
+		var location = L.circle([d.coords[0], d.coords[1]], {radius: 25}).setStyle({className:'spots'}).bindTooltip(d.name);
 
-	// 	vis.calls.addLayer(location);
-	// });
+		vis.locations.addLayer(location);
+	});
 
-	console.log(vis.calls);
+	d3.select("#requestHelp").on("click", getLocation);
 }
+
+
+
+
+/*** Get your location ****/
+function getLocation() {
+	console.log("get location");
+
+    if (navigator.geolocation) {
+        controls.innerHTML = "Requesting help...";
+
+        navigator.geolocation.getCurrentPosition(showPosition,showError, {enableHighAccuracy:true,maximumAge: Infinity,timeout:30000});
+    } else {
+        controls.innerHTML = "Geolocation is not supported by this browser.";
+    }
+
+	// TheMap.showLocation = L.layerGroup().addTo(TheMap).addLayer(you);
+}
+
+function showPosition(position) {
+	console.log(position);
+	var lat = position.coords.latitude;
+	var lon = position.coords.longitude;
+
+	var yourLocation = L.circle([lat, lon], {radius: 50}).setStyle({className:'spotsYou'}).bindTooltip("Your location", {className: 'tooltipYou'});
+
+    controls.innerHTML = "Help Requested";
+
+	TheMap.locations.addLayer(yourLocation);
+
+	TheMap.panTo(new L.LatLng(lat, lon));
+
+}
+
+function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            controls.innerHTML = "User denied the request for Geolocation."
+            break;
+        case error.POSITION_UNAVAILABLE:
+            controls.innerHTML = "Location information is unavailable."
+            break;
+        case error.TIMEOUT:
+            controls.innerHTML = "The request to get user location timed out."
+            break;
+        case error.UNKNOWN_ERROR:
+            controls.innerHTML = "An unknown error occurred."
+            break;
+    }
+}
+
+
+function loadData() {
+
+    callData.forEach(function(d) {
+  		d.name = d.name;
+      d.lat = d.coords[0];
+      d.long = d.coords[1];
+  	});
+
+  	// create instance of map
+  	createVis();
+}
+
+
+function createVis(error) {
+  if(error) { console.log(error); }
+
+  TheMap = new CallMap("call-map", callData, [42.3787959, -71.1173543]);
+}
+
