@@ -1,5 +1,6 @@
-var TheMap, lat, lon;
+var theMap, LeafMap;
 var controls = document.getElementById("controls");
+var requestButton = document.getElementById("requestHelp");
 
 
 /** Seed a few points in Boston ***/
@@ -66,12 +67,15 @@ CallMap.prototype.initVis = function() {
 	var vis = this;
 
 	// Initialize leaflet map centered on coords
-	vis.callMap = L.map('call-map').setView([vis.mapPosition[0], vis.mapPosition[1]], 14);
+	vis.callMap = L.map('call-map');
+  LeafMap = vis.callMap;
+
+  vis.callMap.setView([vis.mapPosition[0], vis.mapPosition[1]], 15);
 
 	L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png', {
 			attribution: 'NODE &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> / <a href="http://cartodb.com/attributions">CartoDB</a>',
 			subdomains: 'abcd',
-			maxZoom: 15,
+			maxZoom: 16,
 			minZoom: 14
 			})
 	 .addTo(vis.callMap);
@@ -124,14 +128,12 @@ function getLocation() {
 	console.log("get location");
 
     if (navigator.geolocation) {
-        controls.innerHTML = "Requesting help...";
+        requestButton.innerHTML = "Requesting help...";
 
         navigator.geolocation.getCurrentPosition(showPosition,showError, {enableHighAccuracy:true,maximumAge: Infinity,timeout:30000});
     } else {
         controls.innerHTML = "Geolocation is not supported by this browser.";
     }
-
-	// TheMap.showLocation = L.layerGroup().addTo(TheMap).addLayer(you);
 }
 
 function showPosition(position) {
@@ -141,11 +143,15 @@ function showPosition(position) {
 
 	var yourLocation = L.circle([lat, lon], {radius: 50}).setStyle({className:'spotsYou'}).bindTooltip("Your location", {className: 'tooltipYou'});
 
-    controls.innerHTML = "Help Requested";
+    requestButton.innerHTML = "Help Requested";
+    requestButton.setAttribute('class','on');
 
-	TheMap.locations.addLayer(yourLocation);
+	theMap.locations.addLayer(yourLocation);
 
-	TheMap.panTo(new L.LatLng(lat, lon));
+  LeafMap.flyTo([lat, lon], 15, {
+    pan: { animate: true },
+    zoom: { animate: true }
+  });
 
 }
 
@@ -183,6 +189,6 @@ function loadData() {
 function createVis(error) {
   if(error) { console.log(error); }
 
-  TheMap = new CallMap("call-map", callData, [42.3787959, -71.1173543]);
+  theMap = new CallMap("call-map", callData, [42.361089, -71.05691]);
 }
 
